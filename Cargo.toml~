@@ -1,6 +1,0 @@
-[package]
-name = "nurtered_expectations"
-version = "0.1.0"
-authors = ["bedfordwest <bedfordwest@gmail.com>"]
-
-[dependencies]

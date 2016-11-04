@@ -1,7 +1,8 @@
 [package]
-name = "nurtered_expectations"
+name = "nurtured_expectations"
 version = "0.1.0"
 authors = ["bedfordwest <bedfordwest@gmail.com>"]
 
 [dependencies]
-piston_window = "0.56.0"
+piston = "0.26.0"
+piston_window = "0.57.0"
