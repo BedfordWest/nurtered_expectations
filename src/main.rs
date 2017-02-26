@@ -9,36 +9,24 @@
 // TODO: InputController (trait): handles behavior specific to controllers
 
 extern crate piston;
-extern crate piston_window;
 extern crate graphics;
+extern crate glutin_window;
 extern crate opengl_graphics;
-
-use opengl_graphics::GlGraphics;
-
-mod game;
-
-use piston_window::*;
+extern crate piston_window;
 
 use game::Game;
 
-const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
+mod game;
+mod config;
 
 fn main() {
 
     // TODO: Enter config loading & parsing here
-    
-    // Create the game window
-    let mut window: PistonWindow =
-        WindowSettings::new("Nurtered Expectations", [640, 480])
-        .exit_on_esc(true).build().unwrap();
-
-    // Initialize the graphics backend
-    let mut gl = GlGraphics::new(OPENGL_VERSION);
 
     // Create the 'Game' instance
-    let mut game = Game::new(window);
+    let mut game = Game::new();
     // Run the game
-    game.run(&mut gl);
+    game.run();
 
 }
 
