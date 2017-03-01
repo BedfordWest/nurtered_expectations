@@ -8,10 +8,12 @@
 // TODO: InputTouch (trait): handles behavior occuring when touch input is received
 // TODO: InputController (trait): handles behavior specific to controllers
 
-extern crate piston;
-extern crate graphics;
+
+extern crate gfx_device_gl;
 extern crate glutin_window;
+extern crate graphics;
 extern crate opengl_graphics;
+extern crate piston;
 extern crate piston_window;
 
 use game::Game;
@@ -22,6 +24,7 @@ mod config;
 fn main() {
 
     // TODO: Enter config loading & parsing here
+
 
     // Create the 'Game' instance
     let mut game = Game::new();
