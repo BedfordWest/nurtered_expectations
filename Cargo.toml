@@ -1,7 +1,17 @@
 [package]
-name = "nurtered_expectations"
+name = "nurtured_expectations"
 version = "0.1.0"
 authors = ["bedfordwest <bedfordwest@gmail.com>"]
 
 [dependencies]
-piston_window = "0.56.0"
+gfx_device_gl = "0.13.0"
+piston = "0.31.1"
+piston2d-graphics = "0.21.1"
+pistoncore-glutin_window = "0.35.0"
+piston2d-opengl_graphics = "0.42.0"
+piston_window = "0.64.0"
+
+[features]
+
+ship = []
+
