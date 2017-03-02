@@ -69,11 +69,12 @@ impl Game
     }        
 
     // Handle a key press event
-    fn key_press(&mut self, key: Key, w: &PistonWindow) {
+    fn key_press(&mut self, key: Key, w: &mut PistonWindow) {
 
         if key == Key::C {
             println!("Turned capture cursor on");
             self.capture_cursor = !self.capture_cursor;
+            w.set_capture_cursor(self.capture_cursor);                            
         }
         println!("Pressed keyboard key '{:?}'", key);
         
@@ -120,8 +121,8 @@ impl Game
 
             // Keyboard key was pressed
             if let Some(Button::Keyboard(key)) = e.press_args() {
-                self.key_press(key, &window);
-                window.set_capture_cursor(self.capture_cursor);                
+                self.key_press(key, &mut window);
+
             };
 
             if let Some(button) = e.release_args() {
