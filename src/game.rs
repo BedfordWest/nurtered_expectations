@@ -7,6 +7,8 @@ use gfx_device_gl::{ Resources };
 use piston::event_loop::*;
 use piston::input::*;
 use piston_window::*;
+use std::collections::HashSet;
+use touch_visualizer::TouchVisualizer;
 
 const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
 
@@ -14,7 +16,9 @@ const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
 pub struct Game 
 {
     events: Events,
-    menu_screen:Option<Texture<Resources>>
+    menu_screen: Option<Texture<Resources>>,
+    capture_cursor: bool,
+    touch_visualizer: TouchVisualizer
 }
 
 impl Game
@@ -23,10 +27,13 @@ impl Game
     // Instantiate the game
     pub fn new() -> Self {
         let events = Events::new(EventSettings::new());
+        let touch_visualizer = TouchVisualizer::new();
 
         Game {
             events: events,
-            menu_screen: None
+            menu_screen: None,
+            capture_cursor: false,
+            touch_visualizer: touch_visualizer
         }
     }
 
@@ -43,13 +50,41 @@ impl Game
         ).unwrap();
         self.menu_screen = Some(menu_screen);
     }
-    
+
+    // Handle a mouse press event
+    fn mouse_press(&mut self, button: MouseButton) {
+        println!("Pressed mouse button '{:?}'", button);
+    }
+
+    fn release_key(&mut self, key: Key) {
+        println!("Released key '{:?}'", key);
+    }
+
+    fn release_mouse(&mut self, button: MouseButton) {
+        println!("Released mouse button '{:?}'", button);
+    }
+
+    fn release_controller_button(&mut self, button: ControllerButton) {
+        println!("Released controller button '{:?}'", button);
+    }        
+
+    // Handle a key press event
+    fn key_press(&mut self, key: Key, w: &PistonWindow) {
+
+        if key == Key::C {
+            println!("Turned capture cursor on");
+            self.capture_cursor = !self.capture_cursor;
+        }
+        println!("Pressed keyboard key '{:?}'", key);
+        
+    }
 
     // Handle the render event
     fn render(&mut self, c: &Context, g: &mut G2d) {
         clear([1.0; 4], g);
         let menu_image = self.menu_screen.as_ref().unwrap();
         image(menu_image, c.transform, g);
+        self.touch_visualizer.draw(c, g);
     } 
 
     // This is the function to call to begin execution of the game loop
@@ -63,19 +98,54 @@ impl Game
         // Load up any resources necessary prior to beginning the game loop
         self.load_resources(&window);
 
+        let mut cursor = [0.0, 0.0];
+
         // Begin the primary game loop by iterating through piston::event_loop::Events
         while let Some(e) = self.events.next(&mut window) {
+            self.touch_visualizer.event(window.size(), &e);
 
-            if let Some(_) = e.render_args() {
-                // Event was a render, so let's draw stuff
-                window.draw_2d(&e, |c, g| {
-                    self.render(&c, g);
-                }); 
-            }
+            // Event was a render, so let's draw stuff
+            window.draw_2d(&e, |c, g| {
+                self.render(&c, g);
+            });
 
-            // TODO: Implement input handlers
-            // if let Some(args) = e.press_args(&args) { }
-            // if let Some(args) = e.release_args(&args) { }
+            
+            // Handle input
+
+            // Mouse button was pressed
+            if let Some(Button::Mouse(button)) = e.press_args() {
+                self.mouse_press(button);
+
+            };
+
+            // Keyboard key was pressed
+            if let Some(Button::Keyboard(key)) = e.press_args() {
+                self.key_press(key, &window);
+                window.set_capture_cursor(self.capture_cursor);                
+            };
+
+            if let Some(button) = e.release_args() {
+                match button {
+                    Button::Keyboard(key) => self.release_key(key),
+                    Button::Mouse(button) => self.release_mouse(button),
+                    Button::Controller(button) => self.release_controller_button(button),
+                }
+            };
+
+            e.mouse_cursor(|x,y| {
+                cursor = [x, y];
+                println!("Mouse moved '{} {}'", x, y);
+            });
+
+            e.mouse_scroll(|dx, dy| println!("Scrolled mouse '{}, {}'", dx, dy));
+            e.mouse_relative(|dx, dy| println!("Relative mouse moved '{} {}'", dx, dy));
+            e.text(|text| println!("Typed '{}'", text));
+            e.resize(|w, h| println!("Resized '{}, {}'", w, h));
+
+            if let Some(cursor) = e.cursor_args() {
+                if cursor { println!("Mouse entered"); }
+                else { println!("Mouse left"); }
+            };
 
             if let Some(args) = e.update_args() {
                 self.update(&args);
