@@ -1,27 +1,25 @@
-/****************************** game.rs **********************************
-** Control the main game loop, and implement traits necessary to do so **
-*************************************************************************/
+/// A game struct will represent the running game
 
 use config::*;
 use gfx_device_gl::{ Resources };
 use piston::event_loop::*;
 use piston::input::*;
 use piston_window::*;
+use player::Player;
 use std::collections::HashSet;
 use touch_visualizer::TouchVisualizer;
 
 const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
 
-// Keep track of the current game state
+/// Keep track of the current game state
 #[derive(Debug)]
 enum GameState {
     Menu,
     Playing
 }
 
-// Game struct
-pub struct Game 
-{
+/// Game struct
+pub struct Game {
     events: Events,
     
     // Assets - move to a separate mod/struct later
@@ -32,27 +30,31 @@ pub struct Game
     touch_visualizer: TouchVisualizer,
     
     // Track the game state
-    game_state: GameState
+    game_state: GameState,
+
+    // The game will have just one player for now
+    player: Player
 }
 
-impl Game
-{
+impl Game {
     
-    // Instantiate the game
+    /// Instantiate the game
     pub fn new() -> Self {
         let events = Events::new(EventSettings::new());
         let touch_visualizer = TouchVisualizer::new();
+        let player = Player::new();
 
         Game {
             events: events,
             menu_screen: None,
             capture_cursor: false,
             touch_visualizer: touch_visualizer,
-            game_state: GameState::Menu
+            game_state: GameState::Menu,
+            player: player
         }
     }
 
-    // Handle the initial load of game resources
+    /// Handle the initial load of game resources
     // TODO: Move this to separate modules for display and audio
     fn load_resources(&mut self, w: &PistonWindow) {
         let root = root();
@@ -66,24 +68,27 @@ impl Game
         self.menu_screen = Some(menu_screen);
     }
 
-    // Handle a mouse press event
+    /// Handle a mouse press event
     fn mouse_press(&mut self, button: MouseButton) {
         println!("Pressed mouse button '{:?}'", button);
     }
 
+    /// Handle the release of a keyboard key
     fn release_key(&mut self, key: Key) {
         println!("Released key '{:?}'", key);
     }
 
+    /// Handle the release of a mouse button
     fn release_mouse(&mut self, button: MouseButton) {
         println!("Released mouse button '{:?}'", button);
     }
 
+    /// Handle the release of a controller button
     fn release_controller_button(&mut self, button: ControllerButton) {
         println!("Released controller button '{:?}'", button);
     }        
 
-    // Handle a key press event
+    /// Handle a keyboard key press event
     fn key_press(&mut self, key: Key, w: &mut PistonWindow) {
 
         match key {
@@ -108,7 +113,7 @@ impl Game
         
     }
 
-    // Handle the render event
+    /// Handle the render event - should be called from draw2d in the event loop
     fn render(&mut self, c: &Context, g: &mut G2d) {
         clear([1.0; 4], g);
         let menu_image = self.menu_screen.as_ref().unwrap();
@@ -116,7 +121,7 @@ impl Game
         self.touch_visualizer.draw(c, g);
     } 
 
-    // This is the function to call to begin execution of the game loop
+    /// This is the function to call to begin execution of the game loop
     pub fn run(&mut self) {
 
         // Create the primary window for the game
@@ -182,7 +187,7 @@ impl Game
         } 
     }
 
-    // Handle the update event
+    /// Handle the update event
     fn update(&mut self, args: &UpdateArgs) {
     }    
 }

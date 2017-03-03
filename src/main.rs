@@ -19,8 +19,9 @@ extern crate touch_visualizer;
 
 use game::Game;
 
-mod game;
 mod config;
+mod game;
+mod player;
 
 fn main() {
 
