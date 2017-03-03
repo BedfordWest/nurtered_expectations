@@ -12,13 +12,27 @@ use touch_visualizer::TouchVisualizer;
 
 const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
 
+// Keep track of the current game state
+#[derive(Debug)]
+enum GameState {
+    Menu,
+    Playing
+}
+
 // Game struct
 pub struct Game 
 {
     events: Events,
+    
+    // Assets - move to a separate mod/struct later
     menu_screen: Option<Texture<Resources>>,
+
+    // For debugging the mouse
     capture_cursor: bool,
-    touch_visualizer: TouchVisualizer
+    touch_visualizer: TouchVisualizer,
+    
+    // Track the game state
+    game_state: GameState
 }
 
 impl Game
@@ -33,7 +47,8 @@ impl Game
             events: events,
             menu_screen: None,
             capture_cursor: false,
-            touch_visualizer: touch_visualizer
+            touch_visualizer: touch_visualizer,
+            game_state: GameState::Menu
         }
     }
 
@@ -71,12 +86,25 @@ impl Game
     // Handle a key press event
     fn key_press(&mut self, key: Key, w: &mut PistonWindow) {
 
-        if key == Key::C {
-            println!("Turned capture cursor on");
-            self.capture_cursor = !self.capture_cursor;
-            w.set_capture_cursor(self.capture_cursor);                            
-        }
-        println!("Pressed keyboard key '{:?}'", key);
+        match key {
+            Key::C => {
+              println!("Toggled capture cursor");
+              self.capture_cursor = !self.capture_cursor;
+              w.set_capture_cursor(self.capture_cursor);                            
+            },
+
+            Key::D1 => {
+              self.game_state = GameState::Menu;
+              println!("Game state set to {:?}!", self.game_state);            
+            },
+
+            Key::D2 => {
+              self.game_state = GameState::Playing;
+              println!("Game state set to {:?}!", self.game_state);            
+            },
+            
+            _ => println!("Pressed keyboard key '{:?}'", key),
+        };
         
     }
 
@@ -93,7 +121,7 @@ impl Game
 
         // Create the primary window for the game
         let mut window: PistonWindow =
-            WindowSettings::new("Nurtered Expectations", [640, 480])
+            WindowSettings::new("Nurtered Expectations", [1920, 1080])
             .opengl(OPENGL_VERSION).exit_on_esc(true).build().unwrap();
 
         // Load up any resources necessary prior to beginning the game loop
