@@ -15,6 +15,7 @@ extern crate graphics;
 extern crate opengl_graphics;
 extern crate piston;
 extern crate piston_window;
+extern crate sprite;
 extern crate touch_visualizer;
 
 use game::Game;

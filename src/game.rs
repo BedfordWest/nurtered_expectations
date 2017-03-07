@@ -2,11 +2,12 @@
 
 use config::*;
 use gfx_device_gl::{ Resources };
-use piston::event_loop::*;
+use graphics::types::SourceRectangle;
 use piston::input::*;
 use piston_window::*;
 use player::Player;
-use std::collections::HashSet;
+use sprite::*;
+use std::rc::Rc;
 use touch_visualizer::TouchVisualizer;
 
 const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
@@ -20,7 +21,6 @@ enum GameState {
 
 /// Game struct
 pub struct Game {
-    events: Events,
     
     // Assets - move to a separate mod/struct later
     menu_screen: Option<Texture<Resources>>,
@@ -40,12 +40,10 @@ impl Game {
     
     /// Instantiate the game
     pub fn new() -> Self {
-        let events = Events::new(EventSettings::new());
         let touch_visualizer = TouchVisualizer::new();
         let player = Player::new();
 
         Game {
-            events: events,
             menu_screen: None,
             capture_cursor: false,
             touch_visualizer: touch_visualizer,
@@ -58,6 +56,8 @@ impl Game {
     // TODO: Move this to separate modules for display and audio
     fn load_resources(&mut self, w: &PistonWindow) {
         let root = root();
+
+        // Load the main menu image
         let menu_path = root.join("./assets/crystal-caves.jpg");
         let menu_screen = Texture::from_path(
             &mut w.factory.clone(),
@@ -66,6 +66,7 @@ impl Game {
             &TextureSettings::new()
         ).unwrap();
         self.menu_screen = Some(menu_screen);
+
     }
 
     /// Handle a mouse press event
@@ -93,7 +94,7 @@ impl Game {
 
         match key {
             Key::C => {
-              println!("Toggled capture cursor");
+              println!("Toggled captuppre cursor");
               self.capture_cursor = !self.capture_cursor;
               w.set_capture_cursor(self.capture_cursor);                            
             },
@@ -107,6 +108,11 @@ impl Game {
               self.game_state = GameState::Playing;
               println!("Game state set to {:?}!", self.game_state);            
             },
+
+            Key::F => {
+              w.set_should_close(true);
+              println!("Window will close!");            
+            },            
             
             _ => println!("Pressed keyboard key '{:?}'", key),
         };
@@ -125,22 +131,43 @@ impl Game {
     pub fn run(&mut self) {
 
         // Create the primary window for the game
-        let mut window: PistonWindow =
-            WindowSettings::new("Nurtered Expectations", [1920, 1080])
-            .opengl(OPENGL_VERSION).exit_on_esc(true).build().unwrap();
+        let (width, height) = (1920, 1080);
+        let mut window: PistonWindow<> =
+            WindowSettings::new("Nurtured Expectations", (width, height))
+            .opengl(OPENGL_VERSION)
+            .resizable(true)
+            .decorated(false)
+            .exit_on_esc(true)
+            .fullscreen(true)
+            .build()
+            .unwrap();
 
         // Load up any resources necessary prior to beginning the game loop
         self.load_resources(&window);
 
         let mut cursor = [0.0, 0.0];
+  //      let mut scene = Scene::new();
+        let root = root();        
+        let sample_char_path = root.join("./assets/char_example.png");
+        let sample_char_tex = Rc::new(Texture::from_path(
+            &mut window.factory.clone(),
+            &sample_char_path,
+            Flip::None,
+            &TextureSettings::new()
+        ).unwrap());
+        let mut sample_char = Sprite::from_texture(sample_char_tex.clone());
+        sample_char.set_position(width as f64 / 2.0, height as f64 / 2.0);
+//        let id = scene.add_child(sample_char);
 
         // Begin the primary game loop by iterating through piston::event_loop::Events
-        while let Some(e) = self.events.next(&mut window) {
+        while let Some(e) = window.next() {
+//            scene.event(&e);
             self.touch_visualizer.event(window.size(), &e);
 
             // Event was a render, so let's draw stuff
             window.draw_2d(&e, |c, g| {
                 self.render(&c, g);
+                sample_char.draw(c.transform, g);
             });
 
             
@@ -183,11 +210,37 @@ impl Game {
 
             if let Some(args) = e.update_args() {
                 self.update(&args);
-            }           
+                let src_rect1: SourceRectangle = [0.0, 704.0, 64.0, 64.0];
+                let src_rect2: SourceRectangle = [64.0, 704.0, 64.0, 64.0];
+                let src_rect3: SourceRectangle = [128.0, 704.0, 64.0, 64.0];
+                let src_rect4: SourceRectangle = [192.0, 704.0, 64.0, 64.0];
+                let src_rect5: SourceRectangle = [256.0, 704.0, 64.0, 64.0];
+                let src_rect6: SourceRectangle = [320.0, 704.0, 64.0, 64.0];
+                let src_rect7: SourceRectangle = [384.0, 704.0, 64.0, 64.0];
+                let src_rect8: SourceRectangle = [448.0, 704.0, 64.0, 64.0];
+                let src_rect9: SourceRectangle = [512.0, 704.0, 64.0, 64.0];                
+                match self.player.get_dt() {
+                    0.0 ... 0.11 => sample_char.set_src_rect(src_rect1),
+                    0.11 ... 0.22 => sample_char.set_src_rect(src_rect2),
+                    0.22 ... 0.33 => sample_char.set_src_rect(src_rect3),
+                    0.33 ... 0.44 => sample_char.set_src_rect(src_rect4),
+                    0.44 ... 0.55 => sample_char.set_src_rect(src_rect5),
+                    0.55 ... 0.66 => sample_char.set_src_rect(src_rect6),
+                    0.66 ... 0.77 => sample_char.set_src_rect(src_rect7),
+                    0.77 ... 0.88 => sample_char.set_src_rect(src_rect8),
+                    0.88 ... 0.99 => sample_char.set_src_rect(src_rect9),                    
+                    _ => sample_char.set_src_rect(src_rect9),
+                }
+            }
+
         } 
     }
 
     /// Handle the update event
     fn update(&mut self, args: &UpdateArgs) {
-    }    
+        self.player.update_char(args.dt);
+        if self.player.get_dt() > 1.0 { self.player.reset_dt(); }
+    }
+
+
 }
