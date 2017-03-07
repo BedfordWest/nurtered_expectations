@@ -93,7 +93,7 @@ impl Game {
 
         match key {
             Key::C => {
-              println!("Toggled capture cursor");
+              println!("Toggled captuppre cursor");
               self.capture_cursor = !self.capture_cursor;
               w.set_capture_cursor(self.capture_cursor);                            
             },
@@ -107,6 +107,11 @@ impl Game {
               self.game_state = GameState::Playing;
               println!("Game state set to {:?}!", self.game_state);            
             },
+
+            Key::F => {
+              w.set_should_close(true);
+              println!("Window will close!");            
+            },            
             
             _ => println!("Pressed keyboard key '{:?}'", key),
         };
@@ -125,9 +130,15 @@ impl Game {
     pub fn run(&mut self) {
 
         // Create the primary window for the game
-        let mut window: PistonWindow =
-            WindowSettings::new("Nurtered Expectations", [1920, 1080])
-            .opengl(OPENGL_VERSION).exit_on_esc(true).build().unwrap();
+        let mut window: PistonWindow<> =
+            WindowSettings::new("Nurtured Expectations", [1920, 1080])
+            .opengl(OPENGL_VERSION)
+            .resizable(true)
+            .decorated(false)
+            .exit_on_esc(true)
+            .fullscreen(true)
+            .build()
+            .unwrap();
 
         // Load up any resources necessary prior to beginning the game loop
         self.load_resources(&window);
@@ -183,7 +194,8 @@ impl Game {
 
             if let Some(args) = e.update_args() {
                 self.update(&args);
-            }           
+            }
+
         } 
     }
 
