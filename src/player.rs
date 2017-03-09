@@ -2,8 +2,6 @@
 
 /// The struct representing the player
 
-use piston::input::UpdateArgs;
-
 pub struct Player {
     hp: i32,
     dt: f64

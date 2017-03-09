@@ -8,7 +8,7 @@
 // TODO: InputTouch (trait): handles behavior occuring when touch input is received
 // TODO: InputController (trait): handles behavior specific to controllers
 
-
+extern crate find_folder;
 extern crate gfx_device_gl;
 extern crate glutin_window;
 extern crate graphics;
@@ -19,20 +19,35 @@ extern crate sprite;
 extern crate touch_visualizer;
 
 use game::Game;
+use piston_window::*;
 
-mod config;
 mod game;
 mod player;
+mod view;
+mod gameresources;
+
+const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
 
 fn main() {
 
+    
     // TODO: Enter config loading & parsing here
 
+    let (width, height) = (1920, 1080);    
+    let mut window: PistonWindow<> =
+        WindowSettings::new("Nurtured Expectations", (width, height))
+        .opengl(OPENGL_VERSION)
+        .resizable(true)
+        .decorated(false)
+        .exit_on_esc(true)
+        .fullscreen(true)
+        .build()
+        .unwrap();    
 
     // Create the 'Game' instance
-    let mut game = Game::new();
+    let mut game = Game::new(&window);
     // Run the game
-    game.run();
+    game.run(window);
 
 }
 
