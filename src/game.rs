@@ -1,16 +1,14 @@
 /// A game struct will represent the running game
 
-use config::*;
+use gameresources::GameResources;
 use gfx_device_gl::{ Resources };
 use graphics::types::SourceRectangle;
 use piston::input::*;
 use piston_window::*;
 use player::Player;
 use sprite::*;
-use std::rc::Rc;
 use touch_visualizer::TouchVisualizer;
-
-const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
+use view::View;
 
 /// Keep track of the current game state
 #[derive(Debug)]
@@ -20,7 +18,8 @@ enum GameState {
 }
 
 /// Game struct
-pub struct Game {
+pub struct Game
+{
     
     // Assets - move to a separate mod/struct later
     menu_screen: Option<Texture<Resources>>,
@@ -33,40 +32,34 @@ pub struct Game {
     game_state: GameState,
 
     // The game will have just one player for now
-    player: Player
+    player: Player,
+
+    // The game needs a view to control rendering/display
+    view: View,
+
+    // Store the resources needed for the game's audio and display
+    gameresources: GameResources,
 }
 
-impl Game {
+impl Game
+{
     
     /// Instantiate the game
-    pub fn new() -> Self {
+    pub fn new(w: &PistonWindow) -> Self {
         let touch_visualizer = TouchVisualizer::new();
         let player = Player::new();
+        let view = View::new();
+        let gameresources = GameResources::new(&w);
 
         Game {
             menu_screen: None,
             capture_cursor: false,
             touch_visualizer: touch_visualizer,
             game_state: GameState::Menu,
-            player: player
+            player: player,
+            view: view,
+            gameresources: gameresources,
         }
-    }
-
-    /// Handle the initial load of game resources
-    // TODO: Move this to separate modules for display and audio
-    fn load_resources(&mut self, w: &PistonWindow) {
-        let root = root();
-
-        // Load the main menu image
-        let menu_path = root.join("./assets/crystal-caves.jpg");
-        let menu_screen = Texture::from_path(
-            &mut w.factory.clone(),
-            &menu_path,
-            Flip::None,
-            &TextureSettings::new()
-        ).unwrap();
-        self.menu_screen = Some(menu_screen);
-
     }
 
     /// Handle a mouse press event
@@ -122,41 +115,19 @@ impl Game {
     /// Handle the render event - should be called from draw2d in the event loop
     fn render(&mut self, c: &Context, g: &mut G2d) {
         clear([1.0; 4], g);
-        let menu_image = self.menu_screen.as_ref().unwrap();
-        image(menu_image, c.transform, g);
+        let menu_texture = self.gameresources.get_menu_texture();
+        image(menu_texture, c.transform, g);
         self.touch_visualizer.draw(c, g);
     } 
 
     /// This is the function to call to begin execution of the game loop
-    pub fn run(&mut self) {
-
-        // Create the primary window for the game
-        let (width, height) = (1920, 1080);
-        let mut window: PistonWindow<> =
-            WindowSettings::new("Nurtured Expectations", (width, height))
-            .opengl(OPENGL_VERSION)
-            .resizable(true)
-            .decorated(false)
-            .exit_on_esc(true)
-            .fullscreen(true)
-            .build()
-            .unwrap();
-
-        // Load up any resources necessary prior to beginning the game loop
-        self.load_resources(&window);
+    pub fn run(&mut self, mut window: PistonWindow) {
 
         let mut cursor = [0.0, 0.0];
-  //      let mut scene = Scene::new();
-        let root = root();        
-        let sample_char_path = root.join("./assets/char_example.png");
-        let sample_char_tex = Rc::new(Texture::from_path(
-            &mut window.factory.clone(),
-            &sample_char_path,
-            Flip::None,
-            &TextureSettings::new()
-        ).unwrap());
-        let mut sample_char = Sprite::from_texture(sample_char_tex.clone());
-        sample_char.set_position(width as f64 / 2.0, height as f64 / 2.0);
+        //      let mut scene = Scene::new();
+        let sample_char_tex = self.gameresources.get_char_texture_rc();
+        let mut sample_char = Sprite::from_texture(sample_char_tex);
+        sample_char.set_position(300.0, 300.0);
 //        let id = scene.add_child(sample_char);
 
         // Begin the primary game loop by iterating through piston::event_loop::Events
