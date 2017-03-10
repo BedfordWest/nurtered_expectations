@@ -112,33 +112,21 @@ impl Game
         
     }
 
-    /// Handle the render event - should be called from draw2d in the event loop
-    fn render(&mut self, c: &Context, g: &mut G2d) {
-        clear([1.0; 4], g);
-        let menu_texture = self.gameresources.get_menu_texture();
-        image(menu_texture, c.transform, g);
-        self.touch_visualizer.draw(c, g);
-    } 
-
     /// This is the function to call to begin execution of the game loop
     pub fn run(&mut self, mut window: PistonWindow) {
 
         let mut cursor = [0.0, 0.0];
-        //      let mut scene = Scene::new();
-        let sample_char_tex = self.gameresources.get_char_texture_rc();
-        let mut sample_char = Sprite::from_texture(sample_char_tex);
-        sample_char.set_position(300.0, 300.0);
-//        let id = scene.add_child(sample_char);
+        self.view.load_player_sprite(&self.player, self.gameresources.get_char_texture_rc());
 
         // Begin the primary game loop by iterating through piston::event_loop::Events
         while let Some(e) = window.next() {
-//            scene.event(&e);
             self.touch_visualizer.event(window.size(), &e);
 
             // Event was a render, so let's draw stuff
             window.draw_2d(&e, |c, g| {
-                self.render(&c, g);
-                sample_char.draw(c.transform, g);
+                View::render_menu(&c, g, self.gameresources.get_menu_texture());
+                self.view.render_player(&c, g, &self.player);
+                self.touch_visualizer.draw(&c, g);                
             });
 
             
@@ -181,27 +169,6 @@ impl Game
 
             if let Some(args) = e.update_args() {
                 self.update(&args);
-                let src_rect1: SourceRectangle = [0.0, 704.0, 64.0, 64.0];
-                let src_rect2: SourceRectangle = [64.0, 704.0, 64.0, 64.0];
-                let src_rect3: SourceRectangle = [128.0, 704.0, 64.0, 64.0];
-                let src_rect4: SourceRectangle = [192.0, 704.0, 64.0, 64.0];
-                let src_rect5: SourceRectangle = [256.0, 704.0, 64.0, 64.0];
-                let src_rect6: SourceRectangle = [320.0, 704.0, 64.0, 64.0];
-                let src_rect7: SourceRectangle = [384.0, 704.0, 64.0, 64.0];
-                let src_rect8: SourceRectangle = [448.0, 704.0, 64.0, 64.0];
-                let src_rect9: SourceRectangle = [512.0, 704.0, 64.0, 64.0];                
-                match self.player.get_dt() {
-                    0.0 ... 0.11 => sample_char.set_src_rect(src_rect1),
-                    0.11 ... 0.22 => sample_char.set_src_rect(src_rect2),
-                    0.22 ... 0.33 => sample_char.set_src_rect(src_rect3),
-                    0.33 ... 0.44 => sample_char.set_src_rect(src_rect4),
-                    0.44 ... 0.55 => sample_char.set_src_rect(src_rect5),
-                    0.55 ... 0.66 => sample_char.set_src_rect(src_rect6),
-                    0.66 ... 0.77 => sample_char.set_src_rect(src_rect7),
-                    0.77 ... 0.88 => sample_char.set_src_rect(src_rect8),
-                    0.88 ... 0.99 => sample_char.set_src_rect(src_rect9),                    
-                    _ => sample_char.set_src_rect(src_rect9),
-                }
             }
 
         } 
@@ -212,6 +179,5 @@ impl Game
         self.player.update_char(args.dt);
         if self.player.get_dt() > 1.0 { self.player.reset_dt(); }
     }
-
 
 }
