@@ -30,9 +30,9 @@ mod gameresources;
 const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
 
 /// Pixels/second impact of gravity
-pub const GRAVITY: f64 = 0.1;
+pub const GRAVITY: f64 = 80.0;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Direction {
     Left,
     Right,

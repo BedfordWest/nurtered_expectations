@@ -34,6 +34,7 @@ impl View
 
     /// Render the player's sprite
     pub fn render_player(&mut self, c: &Context, g: &mut G2d, player: &Player) {
+        clear([1.0; 4], g);        
         let mut sprite = self.char_sprite.as_mut().unwrap();
         sprite.set_position(player.get_position().0, player.get_position().1);
         match *player.get_state() {

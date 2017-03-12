@@ -10,6 +10,7 @@ const WALK_RESET: f64 = 1.0;
 const JUMP_RESET: f64 = 0.6;
 
 /// Store the player's state as an enum
+#[derive(PartialEq)]
 pub enum PlayerState {
     Walking(Direction),
     Jumping(Direction),
@@ -37,7 +38,7 @@ impl Player {
             position: (300.0, 300.0),
             facing: Direction::Right,
             velocity: (0.0, 0.0),
-            jump_speed: 2.0,
+            jump_speed: 30.0,
         }
     }
 
@@ -58,7 +59,9 @@ impl Player {
     }
 
     pub fn jump(&mut self) {
-        self.velocity.1 -= self.jump_speed;
+        if self.state != PlayerState::Falling(self.get_facing()) {
+            self.velocity.1 += self.jump_speed;
+        }
     }
     
     /// Reset the player's delta timer after `reset` seconds
@@ -73,15 +76,27 @@ impl Player {
         if (*last_pressed == Key::Space) && (self.velocity.1 < 0.0) {
             self.state = PlayerState::Jumping(self.get_facing());
         }
-        
-        if *holding.get_right() && (*last_pressed == Key::D) {
+
+        else if *holding.get_right() && !(*holding.get_left()) {
             self.state = PlayerState::Walking(Direction::Right);
             self.facing = Direction::Right;
         }
 
-        else if *holding.get_left() && (*last_pressed == Key::A) {
+        else if *holding.get_left() && !(*holding.get_right()) {
             self.state = PlayerState::Walking(Direction::Left);
             self.facing = Direction::Left;
+        }        
+        
+        else if *holding.get_right() && *holding.get_left() {
+            if *last_pressed == Key::D {
+                self.state = PlayerState::Walking(Direction::Right);
+                self.facing = Direction::Right;
+            }
+
+            else if *last_pressed == Key::A {
+                self.state = PlayerState::Walking(Direction::Left);
+                self.facing = Direction::Left;
+            }            
         }
 
         else if self.velocity.1 > 0.0 {
@@ -101,15 +116,16 @@ impl Player {
     pub fn update_char(&mut self, dt: f64, holding: &Holding, last_pressed: &Key) {
         self.resolve_state(holding, last_pressed);
         self.dt += dt;
+        self.velocity.1 += ::GRAVITY * dt;            
         match self.state {
             PlayerState::Walking(Direction::Right) => {
                 if self.dt > WALK_RESET { self.reset_dt(WALK_RESET); }
-                self.velocity.0 = 1.0;
+                self.velocity.0 = 80.0;
             },
 
             PlayerState::Walking(Direction::Left) => {
                 if self.dt > WALK_RESET { self.reset_dt(WALK_RESET); }
-                self.velocity.0 = -1.0;
+                self.velocity.0 = -80.0;
             },
 
             PlayerState::Jumping(Direction::Right) => {
@@ -123,16 +139,14 @@ impl Player {
             },
 
             PlayerState::Falling(Direction::Left) => {
-                self.velocity.1 += ::GRAVITY * dt;                
             },
 
             PlayerState::Falling(Direction::Right) => {
-                self.velocity.1 += ::GRAVITY * dt;                
             },            
             
             _ => {
                 self.dt = 0.0;
-                self.velocity = (0.0, 0.0);
+                self.velocity.0 = 0.0;
             },
 
         }

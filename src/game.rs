@@ -157,9 +157,15 @@ impl Game {
 
             // Event was a render, so let's draw stuff
             window.draw_2d(&e, |c, g| {
-                View::render_menu(&c, g, self.gameresources.get_menu_texture());
-                self.view.render_player(&c, g, &self.player);
-                self.touch_visualizer.draw(&c, g);                
+                match self.game_state {
+                    GameState::Menu => {
+                        View::render_menu(&c, g, self.gameresources.get_menu_texture());
+                        self.touch_visualizer.draw(&c, g);
+                    },
+                    GameState::Playing => {
+                        self.view.render_player(&c, g, &self.player);
+                    }
+                }
             });
 
             
@@ -209,7 +215,13 @@ impl Game {
 
     /// Handle the update event
     fn update(&mut self, args: &UpdateArgs) {
-        self.player.update_char(args.dt, &self.holding, &self.last_pressed);
+        match self.game_state {
+            GameState::Menu => {
+            },
+            GameState::Playing => {
+                self.player.update_char(args.dt, &self.holding, &self.last_pressed);                
+            }
+        }        
     }
 
 }
