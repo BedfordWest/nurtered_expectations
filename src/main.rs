@@ -22,14 +22,23 @@ use game::Game;
 use piston_window::*;
 
 mod game;
+mod input;
 mod player;
 mod view;
 mod gameresources;
 
 const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
 
-fn main() {
+/// Pixels/second impact of gravity
+pub const GRAVITY: f64 = 80.0;
 
+#[derive(Copy, Clone, PartialEq)]
+pub enum Direction {
+    Left,
+    Right,
+}
+
+fn main() {
     
     // TODO: Enter config loading & parsing here
 

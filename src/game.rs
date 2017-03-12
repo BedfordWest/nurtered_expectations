@@ -1,12 +1,10 @@
 /// A game struct will represent the running game
-
+use Direction;
 use gameresources::GameResources;
-use gfx_device_gl::{ Resources };
-use graphics::types::SourceRectangle;
+use input::*;
 use piston::input::*;
 use piston_window::*;
-use player::Player;
-use sprite::*;
+use player::{ Player, PlayerState };
 use touch_visualizer::TouchVisualizer;
 use view::View;
 
@@ -18,12 +16,8 @@ enum GameState {
 }
 
 /// Game struct
-pub struct Game
-{
+pub struct Game {
     
-    // Assets - move to a separate mod/struct later
-    menu_screen: Option<Texture<Resources>>,
-
     // For debugging the mouse
     capture_cursor: bool,
     touch_visualizer: TouchVisualizer,
@@ -39,10 +33,15 @@ pub struct Game
 
     // Store the resources needed for the game's audio and display
     gameresources: GameResources,
+
+    // Is the player holding a key?
+    holding: Holding,
+
+    // What is the last relevant key pressed?
+    last_pressed: Key,
 }
 
-impl Game
-{
+impl Game {
     
     /// Instantiate the game
     pub fn new(w: &PistonWindow) -> Self {
@@ -50,15 +49,17 @@ impl Game
         let player = Player::new();
         let view = View::new();
         let gameresources = GameResources::new(&w);
+        let holding = Holding::new();
 
         Game {
-            menu_screen: None,
             capture_cursor: false,
             touch_visualizer: touch_visualizer,
             game_state: GameState::Menu,
             player: player,
             view: view,
             gameresources: gameresources,
+            holding: holding,
+            last_pressed: Key::D,
         }
     }
 
@@ -69,7 +70,21 @@ impl Game
 
     /// Handle the release of a keyboard key
     fn release_key(&mut self, key: Key) {
-        println!("Released key '{:?}'", key);
+
+        match key {
+
+            Key::D => {
+                self.holding.set_right(false);
+                println!("Released keyboard key D");
+            },
+
+            Key::A => {
+                self.holding.set_left(false);
+                println!("Released keyboard key A");
+            },            
+            
+            _ => println!("Released keyboard key '{:?}'", key),
+        };        
     }
 
     /// Handle the release of a mouse button
@@ -87,7 +102,7 @@ impl Game
 
         match key {
             Key::C => {
-              println!("Toggled captuppre cursor");
+              println!("Toggled capture cursor");
               self.capture_cursor = !self.capture_cursor;
               w.set_capture_cursor(self.capture_cursor);                            
             },
@@ -105,6 +120,24 @@ impl Game
             Key::F => {
               w.set_should_close(true);
               println!("Window will close!");            
+            },
+
+            Key::D => {
+                self.holding.set_right(true);
+                self.last_pressed = key;
+                println!("Pressed keyboard key D");
+            },
+
+            Key::A => {
+                self.holding.set_left(true);
+                self.last_pressed = key;
+                println!("Pressed keyboard key A");
+            },
+
+            Key::Space => {
+                self.last_pressed = key;
+                self.player.jump();
+                println!("Pressed keyboard key Space");
             },            
             
             _ => println!("Pressed keyboard key '{:?}'", key),
@@ -124,9 +157,15 @@ impl Game
 
             // Event was a render, so let's draw stuff
             window.draw_2d(&e, |c, g| {
-                View::render_menu(&c, g, self.gameresources.get_menu_texture());
-                self.view.render_player(&c, g, &self.player);
-                self.touch_visualizer.draw(&c, g);                
+                match self.game_state {
+                    GameState::Menu => {
+                        View::render_menu(&c, g, self.gameresources.get_menu_texture());
+                        self.touch_visualizer.draw(&c, g);
+                    },
+                    GameState::Playing => {
+                        self.view.render_player(&c, g, &self.player);
+                    }
+                }
             });
 
             
@@ -176,8 +215,14 @@ impl Game
 
     /// Handle the update event
     fn update(&mut self, args: &UpdateArgs) {
-        self.player.update_char(args.dt);
-        if self.player.get_dt() > 1.0 { self.player.reset_dt(); }
+        match self.game_state {
+            GameState::Menu => {
+            },
+            GameState::Playing => {
+                self.player.update_char(args.dt, &self.holding, &self.last_pressed);                
+            }
+        }        
     }
 
 }
+
