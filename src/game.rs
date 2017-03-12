@@ -2,6 +2,7 @@
 use Direction;
 use gameresources::GameResources;
 use input::*;
+use level::Level;
 use piston::input::*;
 use piston_window::*;
 use player::{ Player, PlayerState };
@@ -39,6 +40,10 @@ pub struct Game {
 
     // What is the last relevant key pressed?
     last_pressed: Key,
+
+    // Keep a list of blocks for the game
+    level: Level,
+    
 }
 
 impl Game {
@@ -50,6 +55,7 @@ impl Game {
         let view = View::new();
         let gameresources = GameResources::new(&w);
         let holding = Holding::new();
+        let level = Level::new();
 
         Game {
             capture_cursor: false,
@@ -60,6 +66,7 @@ impl Game {
             gameresources: gameresources,
             holding: holding,
             last_pressed: Key::D,
+            level: level,
         }
     }
 
@@ -149,7 +156,13 @@ impl Game {
     pub fn run(&mut self, mut window: PistonWindow) {
 
         let mut cursor = [0.0, 0.0];
+
+        // Load textures
         self.view.load_player_sprite(&self.player, self.gameresources.get_char_texture_rc());
+        self.view.load_block_sprite(self.gameresources.get_char_texture_rc());
+
+        // Load the level
+        self.level.load_blocks();
 
         // Begin the primary game loop by iterating through piston::event_loop::Events
         while let Some(e) = window.next() {
@@ -159,10 +172,13 @@ impl Game {
             window.draw_2d(&e, |c, g| {
                 match self.game_state {
                     GameState::Menu => {
+                        clear([1.0; 4], g);                        
                         View::render_menu(&c, g, self.gameresources.get_menu_texture());
                         self.touch_visualizer.draw(&c, g);
                     },
                     GameState::Playing => {
+                        clear([1.0; 4], g);
+                        self.view.render_blocks(&c, g, self.level.get_blocks());
                         self.view.render_player(&c, g, &self.player);
                     }
                 }

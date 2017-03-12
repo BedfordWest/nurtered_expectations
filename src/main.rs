@@ -21,8 +21,10 @@ extern crate touch_visualizer;
 use game::Game;
 use piston_window::*;
 
+mod block;
 mod game;
 mod input;
+mod level;
 mod player;
 mod view;
 mod gameresources;

@@ -1,5 +1,6 @@
 /// This module handles rendering for the game
 
+use block::Block;
 use Direction;
 use gfx_device_gl::{ Resources };
 use graphics::types::SourceRectangle;
@@ -13,6 +14,7 @@ pub struct View
 {
     position: (u32, u32),
     char_sprite: Option<Sprite<Texture<Resources>>>,
+    block_sprite: Option<Sprite<Texture<Resources>>>,
 }
 
 /// Implement rendering/display logic for the game
@@ -23,18 +25,27 @@ impl View
         View {
             position: (0,0),
             char_sprite: None,
+            block_sprite: None,
         }
     }    
 
+    pub fn render_blocks(&mut self, c: &Context, g: &mut G2d, blocks: &Vec<Block>) {
+        let mut sprite = self.block_sprite.as_mut().unwrap();
+        let src_rect: SourceRectangle = [449.0, 0.0, 64.0, 64.0];
+        sprite.set_src_rect(src_rect);
+        for block in blocks {
+            sprite.set_position(block.get_position().0, block.get_position().1);
+            sprite.draw(c.transform, g);
+        }
+    }
+    
     /// Render the main menu
     pub fn render_menu(c: &Context, g: &mut G2d, menu: &Texture<Resources>) {
-        clear([1.0; 4], g);
         image(menu, c.transform, g);
     }
 
     /// Render the player's sprite
     pub fn render_player(&mut self, c: &Context, g: &mut G2d, player: &Player) {
-        clear([1.0; 4], g);        
         let mut sprite = self.char_sprite.as_mut().unwrap();
         sprite.set_position(player.get_position().0, player.get_position().1);
         match *player.get_state() {
@@ -154,7 +165,13 @@ impl View
     pub fn load_player_sprite(&mut self, player: &Player, tex_rc: Rc<Texture<Resources>>) {
         self.char_sprite = Some(Sprite::from_texture(tex_rc));
         let mut sprite = self.char_sprite.as_mut().unwrap();
-        sprite.set_position(300.0, 300.0);
+        sprite.set_position(player.get_position().0, player.get_position().1);
+    }
+
+    pub fn load_block_sprite(&mut self, tex_rc: Rc<Texture<Resources>>) {
+        self.block_sprite = Some(Sprite::from_texture(tex_rc));
+        let mut sprite = self.block_sprite.as_mut().unwrap();
+        sprite.set_position(0.0, 0.0);
     }
 
 }
