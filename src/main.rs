@@ -12,6 +12,7 @@ extern crate find_folder;
 extern crate gfx_device_gl;
 extern crate glutin_window;
 extern crate graphics;
+extern crate ncollide;
 extern crate opengl_graphics;
 extern crate piston;
 extern crate piston_window;

@@ -6,6 +6,8 @@ authors = ["bedfordwest <bedfordwest@gmail.com>"]
 [dependencies]
 find_folder = "0.3.0"
 gfx_device_gl = "0.13.0"
+nalgebra = "0.11.1"
+ncollide = "0.11.0"
 piston = "0.31.1"
 piston_window = "0.64.0"
 piston2d-graphics = "0.21.1"

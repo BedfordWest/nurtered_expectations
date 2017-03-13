@@ -22,7 +22,7 @@ impl Level {
         let mut blocks = Vec::new();
         for x in 1..10 {
             let mut block: Block = Block::new();
-            let position: (f64, f64) = (x as f64 * 64.0, 300.0);
+            let position: (f64, f64) = (x as f64 * 64.0, 364.0);
             block.set_position(position);
             blocks.push(block);
         }

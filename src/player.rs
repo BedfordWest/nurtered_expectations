@@ -1,6 +1,7 @@
 /// Each player in the game will be represented by a player struct
 
 use Direction;
+use graphics::types::SourceRectangle;
 use input::Holding;
 use piston::input::keyboard::Key;
 
@@ -27,6 +28,7 @@ pub struct Player {
     facing: Direction,
     velocity: (f64, f64),
     jump_speed: f64,
+    bounding: (f64, f64),
 }
 
 impl Player {
@@ -39,9 +41,16 @@ impl Player {
             facing: Direction::Right,
             velocity: (0.0, 0.0),
             jump_speed: 30.0,
+            bounding: (25.0, 25.0),
         }
     }
 
+    /// Get the bounding box for the character
+    pub fn get_bounding(&self) -> SourceRectangle {
+        [self.position.0 - self.bounding.0, self.position.1 - self.bounding.1,
+         self.bounding.0 * 2.0, self.bounding.1 * 2.0]
+    }
+    
     pub fn get_dt(&self) -> f64 {
         self.dt
     }
