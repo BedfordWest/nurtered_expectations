@@ -24,6 +24,7 @@ use game::Game;
 use piston_window::*;
 
 mod block;
+mod collision;
 mod game;
 mod input;
 mod level;
