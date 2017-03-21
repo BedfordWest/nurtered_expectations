@@ -18,6 +18,23 @@ impl Collision {
 
 struct CollisionObjectData<T> {
     entity_type: T,
-    velocity: Option<Cell<Vector2<f64>>>,
-    
+    velocity: Option<Cell<Vector2<f64>>>,    
+}
+
+impl<T> CollisionObjectData<T> {
+    pub fn new(entity_type: T, velocity: Option<Vector2<f64>>) -> CollisionObjectData<T> {
+        let init_velocity;
+        if let Some(velocity) = velocity {
+            init_velocity = Some(Cell::new(velocity))
+        }
+
+        else {
+            init_velocity = None
+        }
+
+        CollisionObjectData {
+            entity_type: entity_type,
+            velocity: init_velocity
+        }
+    }
 }
